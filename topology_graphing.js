@@ -41,17 +41,9 @@ const click_event = document.getElementById("button_id");
 
 
             // Create the image
-            var img = new Image();
-            img.src = 'white square.png';
             var canvas = document.getElementById('topology_canvas');
             var ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, elevation_dimensions[1], elevation_dimensions[0]);
-            var image = ctx.getImageData(0, 0, elevation_dimensions[1], elevation_dimensions[0]);
-            image.crossOrigin = "anonymous";
-            console.log("test");
-            console.log(image);
-            var imageData = image.data;
-            console.log(imageData.length);
+           
 
             // Colours used for different layers (TODO: look for actually good colours to use)
             var layer_colors = {
@@ -97,15 +89,38 @@ const click_event = document.getElementById("button_id");
             // Replace pixels with the corresponding colour (keep original data set if person wants to change layers)
             // Clone original data grid
             var layer_grid = JSON.parse(JSON.stringify(elevation_data.carpet));
-            var curr_imagedata_position = 0;
+
             for (let x_coordinate in elevation_data.carpet) {
-                
                 for (let y_coordinate in elevation_data.carpet[x_coordinate]) {
                     
                     let curr_elevation = elevation_data.carpet[x_coordinate][y_coordinate];
                     let curr_layer = Math.floor((curr_elevation - min_elevation) / layer_height) + 1;
                     layer_grid[x_coordinate][y_coordinate] = curr_layer;
+                
+                }
+            }
 
+            layer_grid =  resize_pixels(layer_grid, 500);
+            var new_grid_dimensions = [layer_grid.length, layer_grid[0].length];
+            console.log(layer_grid);
+
+            // Create image
+            var img = new Image(new_grid_dimensions[1], new_grid_dimensions[0]);
+            var temp_canvas = document.createElement('canvas');
+            var context = temp_canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            context.drawImage(img, 0, 0 );
+            var myData = context.getImageData(0, 0, img.width, img.height);
+            var imageData = myData.data;
+
+
+            // Map layer rgb to imageData
+            var curr_imagedata_position = 0;
+            for (let x_coordinate in layer_grid) {
+                for (let y_coordinate in layer_grid[x_coordinate]) {
+                
+                    let curr_layer = layer_grid[x_coordinate][y_coordinate];
                     // Set Imagedata channels to rgb of calculated layer
                     imageData[curr_imagedata_position] = layer_colors[curr_layer].r;
                     imageData[curr_imagedata_position + 1] = layer_colors[curr_layer].g;
@@ -114,9 +129,51 @@ const click_event = document.getElementById("button_id");
                     curr_imagedata_position += 4;
                 }
             }
+            
+            myData.data = imageData;
 
-            image.data = imageData;
-            ctx.putImageData(image, 0, 0);
+            const grid_dimensions = [layer_grid.length, layer_grid.length];
+            canvas.width = grid_dimensions[0];
+            canvas.height = grid_dimensions[1];
+
+            createImageBitmap(myData).then(function(imgBitmap) {
+                ctx.drawImage(imgBitmap, 0, 0);
+                let myData = context.getImageData(0, 0, img.width, img.height);
+            });
+        };
+        // Used to resize pixels to achieve a minimum image size without information loss
+        function resize_pixels(pixel_grid, min_size) {
+
+            const grid_dimensions = [pixel_grid.length, pixel_grid[0].length];
+            var size = grid_dimensions[0];
+            if (grid_dimensions[1] > size) {
+                size = grid_dimensions[1];
+            }
+
+            var scale_factor = Math.floor(min_size/size);
+
+            // Create new pixel grid by expanding old grid manually
+            var new_pixel_grid = new Array(grid_dimensions[0] * scale_factor).fill(0).map(() => new Array(grid_dimensions[1] * scale_factor).fill(0));
+
+            // For every pixel in original data grid
+            for (let x_coordinate in pixel_grid) {
+                for (let y_coordinate in pixel_grid[x_coordinate]) {
+
+                    let curr_pixel_value = pixel_grid[x_coordinate][y_coordinate];
+
+                    // Fill in all scaled pixels with current pixel value (pixel[x] --> pixel[x + scale_factor] and pixel[y] --> pixel[y + scale_factor])
+                    for (let x = 0; x < scale_factor; x++) {
+                        for (let y = 0; y < scale_factor; y++) {
+                            new_pixel_grid[x_coordinate * scale_factor + x][y_coordinate * scale_factor + y] = curr_pixel_value;
+                        
+                        }
+                    }
+
+                }
+            }
+            var new_grid_dimensions = [new_pixel_grid.length, new_pixel_grid[0].length];
+            console.log(new_pixel_grid);
+            return new_pixel_grid;
         };
 
     };
