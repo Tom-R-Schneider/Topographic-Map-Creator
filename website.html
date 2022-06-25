@@ -2,8 +2,8 @@
 <html>
 <body>
 
-<h2>HTML Image</h2>
-<canvas id="topology_canvas" width="75" height="63"></canvas>
+<h2>Topographic Map Creator</h2>
+<canvas id="topology_canvas" width="0" height="0"></canvas>
 <div>
     <label id="label_NW_coordinate">NW coordinate:</label>
     <input type="text" id="NW_coordinate" name="NW coordinate">
@@ -17,10 +17,14 @@
     <input type="text" id="layers" name="Model Layers">
 </div>
 <div>
+    <label id="label_size">Image Size:</label>
+    <input type="text" id="size" name="Image Size">
+</div>
+<div>
     <button 
     type="button" 
     id="button_id">
-        Create Topology Map
+        Create Topographic Map
     </button>
     <script src="topology_graphing.js"></script>
 </div>
