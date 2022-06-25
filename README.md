@@ -3,10 +3,10 @@
 ## Features
 
 - Create topographic map by providing top-left and bottom-right coordinates 
-- Uses xyz API to get elevation data (free and no need to register for an API key)
+- Uses Airmap API (https://developers.airmap.com/docs/elevation-api) to get elevation data (free and no need to register for an API key)
 - More Configurations: 
--- Image size in pixels
--- Number of layers (maximum 6)
+  - Image size in pixels
+  - Number of layers (maximum 6)
 
 ## How to use
 
