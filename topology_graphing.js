@@ -48,6 +48,11 @@ const click_event = document.getElementById("button_id");
             // Colours used for different layers (TODO: look for actually good colours to use)
             var layer_colors = {
 
+                0: { // Used as border value
+                    "r": 0,
+                    "g": 0,
+                    "b": 0
+                },
                 1: {
                     "r": 0,
                     "g": 51,
@@ -100,7 +105,8 @@ const click_event = document.getElementById("button_id");
                 }
             }
 
-            layer_grid =  resize_pixels(layer_grid, 500);
+            //layer_grid =  resize_pixels(layer_grid, 500);
+            //layer_grid = create_border_pixels(layer_grid);
             var new_grid_dimensions = [layer_grid.length, layer_grid[0].length];
             console.log(layer_grid);
 
@@ -174,6 +180,64 @@ const click_event = document.getElementById("button_id");
             var new_grid_dimensions = [new_pixel_grid.length, new_pixel_grid[0].length];
             console.log(new_pixel_grid);
             return new_pixel_grid;
+        };
+
+        function create_border_pixels(pixel_grid) {
+
+            // Boundaries to check if pixels are valid
+            var x_boundary = pixel_grid.length;
+            var y_boundary = pixel_grid[0].length;
+            var border_pixels = [];
+            // Four checks needed: Right | Bottom | Bottem-Right | Bottem-Left
+            var checks = [[1,0],[0,1],[1,1],[-1,1]]
+            for (let x_coordinate in pixel_grid) {
+                for (let y_coordinate in pixel_grid[x_coordinate]) {
+
+                    let x = x_coordinate;
+                    let y = y_coordinate;
+                    let curr_pixel_value = pixel_grid[x][y];
+                    let valid_pixels = [];
+                    let valid = false;
+
+                    // Already a border
+                    if (curr_pixel_value == 0) {
+                        continue;
+                    }
+                
+                    for (let check of checks) {
+
+                        // Right pixel
+                        x = parseInt(x_coordinate) + check[0];
+                        y = parseInt(y_coordinate) + check[1];
+
+                        // Make sure the pixel exists in the grid
+                        valid = x < x_boundary && y < y_boundary && y >= 0 && x >= 0;
+
+                        if (valid) {
+
+                            let temp_pixel_value = pixel_grid[x][y];
+
+                            // Set the higher value to 0 if values are different
+                            if (curr_pixel_value > temp_pixel_value) {
+
+                                border_pixels.push([x_coordinate, y_coordinate]);
+
+                            } else if (curr_pixel_value < temp_pixel_value) {
+
+                                border_pixels.push([x, y]);
+                            }  
+                        }
+                    }
+                }
+            }
+
+            // Set all border pixels to 0 to later map them to border colour (black)
+            for (let pixels of border_pixels) {
+
+                pixel_grid[pixels[0]][pixels[1]] = 0;
+            } 
+
+            return pixel_grid
         };
 
     };
