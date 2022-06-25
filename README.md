@@ -1,4 +1,4 @@
-# Topographic Map Maker
+# Topographic Map Creator
 
 ## Features
 
